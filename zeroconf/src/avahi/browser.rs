@@ -158,6 +158,10 @@ unsafe extern "C" fn client_callback(
 
     if state == avahi_sys::AvahiClientState_AVAHI_CLIENT_FAILURE {
         context.invoke_callback(Err(avahi_util::get_last_error(client).into()));
+
+        if let Some(client) = &context.client {
+            client.quit();
+        }
     }
 }
 

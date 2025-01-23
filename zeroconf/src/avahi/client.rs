@@ -18,7 +18,7 @@ use libc::{c_int, c_void};
 #[derive(Debug)]
 pub struct ManagedAvahiClient {
     pub(crate) inner: *mut AvahiClient,
-    _poll: Arc<ManagedAvahiSimplePoll>,
+    poll: Arc<ManagedAvahiSimplePoll>,
 }
 
 impl ManagedAvahiClient {
@@ -50,7 +50,7 @@ impl ManagedAvahiClient {
         }
 
         match err {
-            0 => Ok(Self { inner, _poll: poll }),
+            0 => Ok(Self { inner, poll }),
             _ => Err(format!(
                 "could not initialize AvahiClient: {}",
                 avahi_util::get_error(err)
@@ -67,6 +67,10 @@ impl ManagedAvahiClient {
     /// This function is unsafe because of the raw pointer dereference.
     pub unsafe fn host_name<'a>(&self) -> Result<&'a str> {
         get_host_name(self.inner)
+    }
+
+    pub(crate) unsafe fn quit(&self) {
+        self.poll.quit();
     }
 }
 

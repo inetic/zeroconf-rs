@@ -49,20 +49,23 @@ fn main() -> zeroconf::Result<()> {
 
     let event_loop = browser.browse_services()?;
 
-    loop {
-        // calling `poll()` will keep this browser alive
-        event_loop.poll(Duration::from_secs(0))?;
-    }
+    info!("Awaiting browse events...");
+
+    let error = loop {
+        // calling `poll()` will keep this browser alive.
+        if let Err(error) = event_loop.poll(Duration::from_secs(1)) {
+            break error;
+        }
+    };
+
+    Err(error)
 }
 
 fn on_service_discovered(
     result: zeroconf::Result<ServiceDiscovery>,
     _context: Option<Arc<dyn Any>>,
 ) {
-    info!(
-        "Service discovered: {:?}",
-        result.expect("service discovery failed")
-    );
+    info!("Service event: {:?}", result);
 
     // ...
 }
